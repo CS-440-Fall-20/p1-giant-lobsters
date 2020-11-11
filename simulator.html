@@ -9,6 +9,17 @@
         display: block;
         border: 1px solid blue;
     }
+
+    .controls {
+        float: left;
+        background-color: rgb(140, 243, 229);
+        margin: 50px auto;
+        margin-left: 500px;
+        width: 300px;
+        border: rgb(0, 0, 0) 3px dotted;
+        font-family: monospace;
+        text-align: center;
+    }
 </style>
 <script id="vertex-shader" type="x-shader/x-vertex">
     attribute vec3 vPosition; 
@@ -50,6 +61,15 @@ void main()
     <canvas id="gl-canvas" width="1024" height="512">
         Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>
+    <div class="controls">
+        <h2>Key Map</h2>
+        <p style="margin-left: 20px; text-align: left;">
+            - Up and Down arrows to vary speed </br>
+            – W, S (and lower case) for pitch </br>
+            – A, D (and lower case) for yaw </br>
+            – Q, E (and lower case) for roll </br>
+        </p>
+    </div>
 </body>
 
 </html>
