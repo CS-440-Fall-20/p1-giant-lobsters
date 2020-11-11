@@ -199,10 +199,8 @@ function render() {
 /* vary view */
 function varyLeft(mode)
 {
-    console.log("nowmode:",mode);  
     if(mode === "add")
-    {
-        console.log("shift");    
+    {   
         left += 0.01;
     }
     else
@@ -246,18 +244,17 @@ function varyBottom(mode)
     {
         bottom -= 0.01;
     }
-    console.log(bottom);
 }
 
 function varyNear(mode)
 {
     if(mode == "add")
     {
-        near += 0.01;
+        near += 1;
     }
     else
     {
-        near -= 0.01;
+        near -= 1;
     }
 }
 
