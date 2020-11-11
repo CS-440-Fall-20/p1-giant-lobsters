@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+    attribute vec3 vPosition; 
+    attribute vec4 vColour; 
+    varying  vec4 fColour;
+
+    uniform mat4 modelViewMatrix;
+    uniform mat4 projectionMatrix;
+
+    void main() 
+    {
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition,1);
+        
+        fColour = vColour;
+    }
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+varying vec4 fColour;
+void main()
+{
+    gl_FragColor = fColour;
+}
+</script>
+
+
+
+<script type="text/javascript"
+    src="https://www.cs.unm.edu/~angel/BOOK/INTERACTIVE_COMPUTER_GRAPHICS/SEVENTH_EDITION/CODE/Common/webgl-utils.js"></script>
+<script type="text/javascript"
+    src="https://www.cs.unm.edu/~angel/BOOK/INTERACTIVE_COMPUTER_GRAPHICS/SEVENTH_EDITION/CODE/Common/initShaders.js"></script>
+<script type="text/javascript"
+    src="https://www.cs.unm.edu/~angel/BOOK/INTERACTIVE_COMPUTER_GRAPHICS/SEVENTH_EDITION/CODE/Common/MV.js"></script>
+<script type="text/javascript" src="perlin.js"></script>
+<script type="text/javascript" src="simulator.js"></script>
+
+<body>
+    <canvas id="gl-canvas" width="512" height="512">
+        Oops ... your browser doesn't support the HTML5 canvas element
+    </canvas>
+</body>
+
+</html>
