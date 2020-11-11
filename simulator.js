@@ -297,12 +297,12 @@ function FlightMotion(e) {
         if (position_vector[2] >= -1.0)
             position_vector[2] -= 0.01;
     }
-    else if (e == "KeyQ")   //Roll-Counter Clockwise
+    else if (e == "KeyQ")   //Roll-Clockwise
     {
         if (up_vector[2] <= 1.0)
             up_vector[2] += 0.01;
     }
-    else if (e == "KeyE")   //Roll-Clockwise
+    else if (e == "KeyE")   //Roll-Counter Clockwise
     {
         if (up_vector[2] >= -1.0)
             up_vector[2] -= 0.01;
