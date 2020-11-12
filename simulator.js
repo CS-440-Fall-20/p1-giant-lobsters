@@ -7,13 +7,14 @@ var points = [];
 var normals = [];
 var colours = []; //remove when come to shading?
 
+// GLobal buffers
 var vBuffer;
-var colour_buffer;
+var colourBuffer;
 
 var near = -10;
 var far = 10;
 var radius = 3;
-var theta = 48.5;
+var theta = 45.6;
 var phi = 54.0;
 
 var left = -3.0;
@@ -21,7 +22,9 @@ var right = 3.0;
 var ytop = 3.0;
 var bottom = -3.0;
 
+// views
 var wireframe = true;
+var pointsView = false;
 
 var modelViewMatrix, projectionMatrix;
 var modelViewMatrixLoc, projectionMatrixLoc;
@@ -29,12 +32,12 @@ var modelViewMatrixLoc, projectionMatrixLoc;
 var normalMatrix, normalMatrixLoc;
 
 var eye;
-var position_vector = vec3(0.0, 0.0, 0.0);
-var up_vector = vec3(0.0, 1.0, 0.0);
+var atVector = vec3(0.0, 3.0, 0.0);
+var upVector = vec3(0.0, 1.0, 0.0);
 
-
+// speed controls
 var speed = 0;
-var flying_offset = 0;
+var flyingOffset = 0;
 var minAltitude = -0.5; // min altitude
 var maxAltitude = 0.5; // max altitude
 var S = 0.1; // max speed
@@ -71,7 +74,8 @@ window.onload = function init() {
         var vNormal = gl.getAttribLocation(program, "vNormal");
         gl.vertexAttribPointer(vNormal, 4, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(vNormal);*/
-    get_patch(-5, 5, -10, 10);
+    
+    get_patch(-10,10,-10,10);
 
     vBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
@@ -87,8 +91,8 @@ window.onload = function init() {
 
 
     // Load colours data into the GPU
-    colour_buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, colour_buffer);
+    colourBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, colourBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(colours), gl.STATIC_DRAW);
 
     var vColour = gl.getAttribLocation(program, "vColour");
@@ -144,31 +148,37 @@ function get_patch(xmin, xmax, zmin, zmax) {
 function render() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    // adding the speed to the offset for perlin noise.
-    flying_offset += speed;
+    // adding the speed to the offset for perlin noise. (infinite view)
+    flyingOffset += speed;
 
-    //Using perlin noise to get a smooth terrain
+    //Using perlin noise to get smooth mountainous curves at y coordinate of grid points (library implementation)
     noise.seed(10);
+
     for (var k = 0; k < points.length; k++) {
-        points[k][1] = noise.perlin2(points[k][0]-flying_offset, points[k][2]);
+        points[k][1] = noise.perlin2(points[k][0] - flyingOffset, points[k][2]);
     }
 
     gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
-    // gl.bindBuffer( gl.ARRAY_BUFFER, colour_buffer );
-    // gl.bufferData( gl.ARRAY_BUFFER, flatten(colours), gl.STATIC_DRAW );
+    
 
     //Flyby View
     eye = vec3(radius * Math.sin(theta) * Math.cos(phi), radius * Math.sin(theta) * Math.sin(phi), radius * Math.cos(theta));
 
-    modelViewMatrix = lookAt(eye, position_vector, up_vector);
+    modelViewMatrix = lookAt(eye, atVector, upVector);
     projectionMatrix = ortho(left, right, bottom, ytop, near, far);
 
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
+    // gl.uniformMatrix3fv( normalMatrixLoc, false, flatten(normalMatrix) );
 
-    if (wireframe) {
+    if(wireframe)
+    {
         gl.drawArrays(gl.LINES, 0, points.length);
+    }
+    else if(pointsView)
+    {
+        gl.drawArrays(gl.POINTS, 0, points.length);
     }
 
     window.requestAnimFrame(render);
@@ -203,9 +213,14 @@ function varyView(keycode, shiftPressed) {
     {
         varyFar(mode);
     }
+    else if(keycode === "KeyV")
+    {
+        toggleViews();
+    }
 }
 
 /* vary view */
+//TODO: Add restraints
 function varyLeft(mode) {
     if (mode === "add") {
         left += 0.01;
@@ -249,65 +264,84 @@ function varyNear(mode) {
     else {
         near -= 1;
     }
+    console.log(near,far)
 }
 
 function varyFar(mode) {
     if (mode == "add") {
-        far += 0.01;
+        far += 1;
     }
     else {
-        far -= 0.01;
+        far -= 1;
+    }
+    console.log(near,far)
+}
+
+
+// TODO:Add Shaded View 
+function toggleViews()
+{
+    if(wireframe)
+    {
+        wireframe = false;
+        pointsView = true;
+    }
+    else if(pointsView)
+    {
+        wireframe = true;
+        pointsView = false;
     }
 }
+
 
 
 // ********************************************* Flight Controls *******************************************
 
 function FlightMotion(e) {
-    console.log(e)
 
-    if (e == "ArrowUp")   //Speed Increase 
+    if (e == "ArrowUp")   //Accelerate 
     {
         if (speed < S)
             speed += 0.001;
     }
-    else if (e == "ArrowDown")   //Speed Decrease
+    else if (e == "ArrowDown")   //Decelerate
     {
         if (speed > 0)
             speed -= 0.001;
     }
     else if (e == "KeyW")   //Pitch-Up
     {
-        if (position_vector[1] <= maxAltitude) {
-            position_vector[1] += 0.01;
+        if (atVector[1] <= maxAltitude) {
+            atVector[1] += 0.01;
         }
     }
     else if (e == "KeyS")   //Pitch-Down
     {
-        if (position_vector[1] >= minAltitude)
-            position_vector[1] -= 0.01;
+        if (atVector[1] >= minAltitude)
+            atVector[1] -= 0.01;
     }
     else if (e == "KeyA")   //Yaw-Right
     {
-        if (position_vector[2] <= 1.0)
-            position_vector[2] += 0.01;
+        if (atVector[2] <= 1.0)
+            atVector[2] += 0.01;
     }
     else if (e == "KeyD")   //Yaw-Left
     {
-        if (position_vector[2] >= -1.0)
-            position_vector[2] -= 0.01;
+        if (atVector[2] >= -1.0)
+            atVector[2] -= 0.01;
     }
-    else if (e == "KeyQ")   //Roll-Clockwise
+    else if (e == "KeyQ")   //Roll-Counter Clockwise
     {
-        if (up_vector[2] <= 1.0)
-            up_vector[2] += 0.01;
+        if (upVector[2] <= 1.0)
+            upVector[2] += 0.01;
     }
-    else if (e == "KeyE")   //Roll-Counter Clockwise
+    else if (e == "KeyE")   //Roll-Clockwise
     {
-        if (up_vector[2] >= -1.0)
-            up_vector[2] -= 0.01;
+        if (upVector[2] >= -1.0)
+            upVector[2] -= 0.01;
     }
 }
+
 
 
 /* References */
