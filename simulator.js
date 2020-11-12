@@ -38,8 +38,8 @@ var upVector = vec3(0.0, 1.0, 0.0);
 // speed controls
 var speed = 0;
 var flyingOffset = 0;
-var minAltitude = -0.5; // min altitude
-var maxAltitude = 0.5; // max altitude
+var minAltitude = 2.8; // min altitude
+var maxAltitude = 3.5; // max altitude
 var S = 0.1; // max speed
 
 var color = vec4(1, 1, 1, 1);
