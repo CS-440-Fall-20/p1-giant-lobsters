@@ -14,8 +14,8 @@ var colourBuffer;
 var near = -10;
 var far = 10;
 var radius = 3;
-var theta = 45.6;
-var phi = 54.0;
+var theta = 90;
+var phi = 0.0;
 
 var left = -3.0;
 var right = 3.0;
@@ -163,7 +163,7 @@ function render() {
     
 
     //Flyby View
-    eye = vec3(radius * Math.sin(theta) * Math.cos(phi), radius * Math.sin(theta) * Math.sin(phi), radius * Math.cos(theta));
+    eye = vec3(radius * Math.cos(theta),radius * Math.sin(theta) * Math.cos(phi), radius * Math.sin(theta) * Math.sin(phi));
 
     modelViewMatrix = lookAt(eye, atVector, upVector);
     projectionMatrix = ortho(left, right, bottom, ytop, near, far);
