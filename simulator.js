@@ -11,10 +11,11 @@ var colours = []; //remove when come to shading?
 var vBuffer;
 var colourBuffer;
 
-var near = -10;
+
+var near = -1;
 var far = 10;
-var radius = 3;
-var theta = 90;
+var radius = 4.5;
+var theta = 90.0;
 var phi = 0.0;
 
 var left = -3.0;
@@ -155,7 +156,7 @@ function render() {
     noise.seed(10);
 
     for (var k = 0; k < points.length; k++) {
-        points[k][1] = noise.perlin2(points[k][0] - flyingOffset, points[k][2]);
+        points[k][1] = noise.perlin2(points[k][0] + flyingOffset, points[k][2]);
     }
 
     gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
@@ -166,6 +167,8 @@ function render() {
     eye = vec3(radius * Math.cos(theta),radius * Math.sin(theta) * Math.cos(phi), radius * Math.sin(theta) * Math.sin(phi));
 
     modelViewMatrix = lookAt(eye, atVector, upVector);
+
+    //perspective = function(fovy, aspect, near, far) ?
     projectionMatrix = ortho(left, right, bottom, ytop, near, far);
 
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
@@ -187,7 +190,7 @@ function render() {
 
 /// ADD: Quit simulation later (esc key)
 function varyView(keycode, shiftPressed) {
-    var mode = (shiftPressed == true) ? "add" : "minus";
+    var mode = (shiftPressed == true) ? "minus" : "add";
 
     if (keycode === "Digit1") //1 or Shift+1
     {
@@ -217,64 +220,89 @@ function varyView(keycode, shiftPressed) {
     {
         toggleViews();
     }
+    console.log(near, far);
+
 }
 
 /* vary view */
 //TODO: Add restraints
 function varyLeft(mode) {
     if (mode === "add") {
-        left += 0.01;
+        if(left <= -2)
+        {left += 0.01;}
     }
     else {
-        left -= 0.01;
+        if(left > -4)
+        { left -= 0.01; }
     }
 }
 
 function varyRight(mode) {
     if (mode == "add") {
-        right += 0.01;
+        if(right < 4)
+        { right += 0.01; }
     }
     else {
-        right -= 0.01;
+        if(right > 2)
+        {  right -= 0.01;}
     }
 }
 
 function varyTop(mode) {
     if (mode == "add") {
-        ytop += 0.01;
+        if(ytop < 4)
+        {
+            ytop += 0.01;
+        }
     }
     else {
+        if(ytop > 2)
+        {
         ytop -= 0.01;
+        }
     }
 }
 
 function varyBottom(mode) {
     if (mode == "add") {
-        bottom += 0.01;
+        if(bottom > -4 )
+        {  bottom -= 0.01; }
     }
-    else {
-        bottom -= 0.01;
+    else 
+    {
+        if(bottom <= -2)
+        { bottom += 0.01;}
     }
+
 }
 
 function varyNear(mode) {
     if (mode == "add") {
-        near += 1;
+
+        if(near == -1)
+        {
+            near += 4; 
+        }
+        else if( near < 5 )
+        { near += 1; }
     }
     else {
-        near -= 1;
+        if(near > -1 )
+        {  near -= 1; } 
     }
-    console.log(near,far)
 }
 
 function varyFar(mode) {
     if (mode == "add") {
-        far += 1;
+
+        if (far < 12)
+        {  far += 1; }
     }
     else {
-        far -= 1;
+        if (far > 8)
+        {  far -= 1; }
     }
-    console.log(near,far)
+    
 }
 
 
@@ -314,6 +342,7 @@ function FlightMotion(e) {
         if (atVector[1] <= maxAltitude) {
             atVector[1] += 0.01;
         }
+        console.log(atVector);
     }
     else if (e == "KeyS")   //Pitch-Down
     {
@@ -346,3 +375,12 @@ function FlightMotion(e) {
 
 /* References */
 //  perlin.js used for perlin noise 
+
+
+
+// Issues:
+/*
+- zooming in/out with orthographic view (canonical viewing volume?)
+- changing viewing bounds 
+- sharp points at the end of terrain    
+*/
