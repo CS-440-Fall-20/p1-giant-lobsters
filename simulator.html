@@ -57,26 +57,41 @@ void main()
 <script type="text/javascript" src="perlin.js"></script>
 <script type="text/javascript" src="simulator.js"></script>
 
+<!-- using the following link for a popup box for Key Map Controls -->
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
 <body>
+    </br>
+    <div class="w3-container">
+        <button onclick="document.getElementById('id01').style.display='block'" class="w3-button w3-black">Open Key Map</button>
+        <div id="id01" class="w3-modal">
+            <div class="w3-modal-content">
+                <div class="w3-container">
+                    <span onclick="document.getElementById('id01').style.display='none'"
+                        class="w3-button w3-display-topright">&times;</span>
+                    <p style="margin-left: 20px; text-align: left;">
+                        - Up and Down arrows to vary <b>speed.</b> </br>
+                        – W, S (and lower case) for <b>pitch.</b> </br>
+                        – A, D (and lower case) for <b>yaw.</b></br>
+                        – Q, E (and lower case) for <b>roll.</b> </br>
+                        - Press 'V' to toggle <b>views.</b> </br>
+                        - Press 'C' to toggle <b>shading.</b> </br>
+                        – Press 1 and Shift+1 to vary <b>left</b> </br>
+                        – Press 2 and Shift+2 to vary <b>right</b> </br>
+                        – Press 3 and Shift+3 to vary <b>top</b> </br>
+                        – Press 4 and Shift+4 to vary <b>bottom</b> </br>
+                        – Press 5 and Shift+5 to vary <b>near</b></br>
+                        – Press 6 and Shift+6 to vary <b>far</b>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    </br>
     <canvas id="gl-canvas" width="1024" height="512">
         Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>
-    <div class="controls">
-        <h2>Key Map</h2>
-        <p style="margin-left: 20px; text-align: left;">
-            - Up and Down arrows to vary speed </br>
-            – W, S (and lower case) for pitch </br>
-            – A, D (and lower case) for yaw </br>
-            – Q, E (and lower case) for roll </br>
-            - Press 'V' to toggle views </br>
-            – Press 1 and Shift+1 to vary left. </br>
-            – Press 2 and Shift+2 to vary right. </br>
-            – Press 3 and Shift+3 to vary top. </br>
-            – Press 4 and Shift+4 to vary bottom. </br>
-            – Press 5 and Shift+5 to vary near.</br>
-            – Press 6 and Shift+6 to vary far.
-        </p>
-    </div>
+
 </body>
 
 </html>
