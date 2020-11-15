@@ -22,16 +22,49 @@
 <script id="vertex-shader" type="x-shader/x-vertex">
     attribute vec3 vPosition; 
     attribute vec4 vColour; 
+    attribute vec4 vNormal;
     varying  vec4 fColour;
+
+    uniform vec4 ambientProd, diffuseProd, specularProd;
+    uniform vec4 lightPosition;
+    uniform float shininess;
 
     uniform mat4 modelViewMatrix;
     uniform mat4 projectionMatrix;
+    uniform mat3 normalMatrix;
 
     void main() 
     {
+        vec3 posit = (modelViewMatrix * vec4(vPosition,1)).xyz;
+        vec3 dirLight;
+
+        // check for directional light
+        if(lightPosition.w == 0.0) dirLight = normalize(lightPosition.xyz);
+        else dirLight = normalize( lightPosition.xyz - posit );
+
+        // vector from the vertex position to the eye
+        vec3 eye = -normalize( posit );
+
+        // halfway vector
+        vec3 mid = normalize( dirLight + eye );
+
+        // Changing vertex normal into eye coordinates
+        vec3 n = normalize( normalMatrix*vNormal.xyz);
+
+        // Compute terms in the illumination equation
+        vec4 ambient = ambientProd;
+        float Kd = max( dot(dirLight, n), 0.0 );
+        vec4  diffuse = Kd*diffuseProd;
+        float Ks = pow( max(dot(n, mid), 0.0), shininess );
+        vec4  specular = Ks * specularProd;
+        
+        if( dot(dirLight, n) < 0.0 ) {
+            specular = vec4(0.0, 0.0, 0.0, 1.0);
+        } 
         gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition,1);
         gl_PointSize = 3.0;
-        fColour = vColour;
+        fColour = (ambient + diffuse +specular) * vColour;
+        fColour.a = 1.0;
     }
 </script>
 
