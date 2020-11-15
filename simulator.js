@@ -3,15 +3,16 @@
 var canvas;
 var gl;
 
+// Arrays to populate buffers
 var points = [];
 var normals = [];
-var colours = []; //remove when come to shading?
+var colours = []; 
 
 // GLobal buffers
-var vBuffer;
+var vertexBuffer;
 var colourBuffer;
 
-
+//Viewing volume parameters
 var near = -1;
 var far = 10;
 var radius = 4.5;
@@ -23,30 +24,28 @@ var right = 3.0;
 var ytop = 3.0;
 var bottom = -3.0;
 
-// views
-var wireframe = true;
-var pointsView = false;
-
-var modelViewMatrix, projectionMatrix;
-var modelViewMatrixLoc, projectionMatrixLoc;
-
-var normalMatrix, normalMatrixLoc;
-
 var eye;
 var atVector = vec3(0.0, 3.0, 0.0);
 var upVector = vec3(0.0, 1.0, 0.0);
 
+// views
+var wireframe = true;
+var pointsView = false;
+
+var modelViewMatrix, modelViewMatrixLoc;
+var projectionMatrix, projectionMatrixLoc;
+var normalMatrix, normalMatrixLoc;
+
+
 // speed controls
-var speed = 0;
+var speed = 0.02;
 var flyingOffset = 0;
 var minAltitude = 2.8; // min altitude
 var maxAltitude = 3.5; // max altitude
 var S = 0.1; // max speed
 
-var color = vec4(1, 1, 1, 1);
-
-
-var scale = 0.1; //arbitary scling factor for wireframe
+var color = vec4(1, 1, 1, 1); //colour of wireframe terrain (white)
+var scale = 0.1; //arbitary scaling factor for wireframe
 
 
 
@@ -68,18 +67,12 @@ window.onload = function init() {
     var program = initShaders(gl, "vertex-shader", "fragment-shader");
     gl.useProgram(program);
 
-    /*
-        var nBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, nBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, flatten(normals), gl.STATIC_DRAW);
-        var vNormal = gl.getAttribLocation(program, "vNormal");
-        gl.vertexAttribPointer(vNormal, 4, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(vNormal);*/
-    
-    get_patch(-10,10,-10,10);
 
-    vBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+    
+    getPatch(-10,10,-10,10);
+
+    vertexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
 
     var vPosition = gl.getAttribLocation(program, "vPosition");
@@ -109,21 +102,27 @@ window.onload = function init() {
         if (event.shiftKey) { shiftPressed = true; }
 
         varyView(keycode, shiftPressed);
-        FlightMotion(keycode);
+        flightMotion(keycode);
+
+        if(keycode === "Escape") //Quit the simulator 
+        {
+            window.close();
+        }
     }
     render();
 }
 
-function get_patch(xmin, xmax, zmin, zmax) {
-
+function getPatch(xmin, xmax, zmin, zmax) {
+    
     noise.seed(10);
 
     for (var i = xmin; i < xmax; i += scale) {
         for (var j = zmin; j < zmax; j += scale) {
-            //basic mesh  
+            //basic mesh  (triangulated terrain )
             points.push(vec3(i, 0, j + scale));
             points.push(vec3(i, 0, j));
             points.push(vec3(i + scale, 0, j));
+
             points.push(vec3(i, 0, j + scale));
             points.push(vec3(i + scale, 0, j + scale));
             points.push(vec3(i, 0, j + scale));
@@ -137,7 +136,7 @@ function get_patch(xmin, xmax, zmin, zmax) {
             colours.push(color);
 
         }
-        //randomly perturb y-coordinates - using perlin noise
+        //randomly perturb y-coordinates - using perlin noise for smoother peaks
         for (var k = 0; k < points.length; k++) {
             points[k][1] = noise.perlin2(points[k][0], points[k][2]);
         }
@@ -151,15 +150,13 @@ function render() {
 
     // adding the speed to the offset for perlin noise. (infinite view)
     flyingOffset += speed;
-
-    //Using perlin noise to get smooth mountainous curves at y coordinate of grid points (library implementation)
     noise.seed(10);
 
     for (var k = 0; k < points.length; k++) {
         points[k][1] = noise.perlin2(points[k][0] + flyingOffset, points[k][2]);
     }
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
     
 
@@ -167,9 +164,7 @@ function render() {
     eye = vec3(radius * Math.cos(theta),radius * Math.sin(theta) * Math.cos(phi), radius * Math.sin(theta) * Math.sin(phi));
 
     modelViewMatrix = lookAt(eye, atVector, upVector);
-
-    //perspective = function(fovy, aspect, near, far) ?
-    projectionMatrix = ortho(left, right, bottom, ytop, near, far);
+    projectionMatrix = ortho(left, right, bottom, ytop, near, far); //orthographic view
 
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
@@ -184,13 +179,16 @@ function render() {
         gl.drawArrays(gl.POINTS, 0, points.length);
     }
 
+    //TODO: Add Face view
+
     window.requestAnimFrame(render);
 }
 
 
-/// ADD: Quit simulation later (esc key)
+// ********************************************* View Controls ******************************************* //
+/* vary view volume */
 function varyView(keycode, shiftPressed) {
-    var mode = (shiftPressed == true) ? "minus" : "add";
+    var mode = (shiftPressed == true) ? "minus" : "add"; //true if shift key pressed 
 
     if (keycode === "Digit1") //1 or Shift+1
     {
@@ -216,7 +214,7 @@ function varyView(keycode, shiftPressed) {
     {
         varyFar(mode);
     }
-    else if(keycode === "KeyV")
+    else if(keycode === "KeyV") // Toggle views between wireframe, points and faces
     {
         toggleViews();
     }
@@ -224,8 +222,7 @@ function varyView(keycode, shiftPressed) {
 
 }
 
-/* vary view */
-//TODO: Add restraints
+
 function varyLeft(mode) {
     if (mode === "add") {
         if(left <= -2)
@@ -323,9 +320,9 @@ function toggleViews()
 
 
 
-// ********************************************* Flight Controls *******************************************
+// ********************************************* Flight Controls ******************************************* //
 
-function FlightMotion(e) {
+function flightMotion(e) {
 
     if (e == "ArrowUp")   //Accelerate 
     {
@@ -349,14 +346,14 @@ function FlightMotion(e) {
         if (atVector[1] >= minAltitude)
             atVector[1] -= 0.01;
     }
-    else if (e == "KeyA")   //Yaw-Right
+    else if (e == "KeyD")   //Yaw-Right
     {
-        if (atVector[2] <= 1.0)
+        if (atVector[2] <= 0.5)
             atVector[2] += 0.01;
     }
-    else if (e == "KeyD")   //Yaw-Left
+    else if (e == "KeyA")   //Yaw-Left
     {
-        if (atVector[2] >= -1.0)
+        if (atVector[2] >= -0.5)
             atVector[2] -= 0.01;
     }
     else if (e == "KeyQ")   //Roll-Counter Clockwise
@@ -375,12 +372,5 @@ function FlightMotion(e) {
 
 /* References */
 //  perlin.js used for perlin noise 
+// Interactive Computer Graphics - A Top-Down Approach with WebGL (7th Edition)
 
-
-
-// Issues:
-/*
-- zooming in/out with orthographic view (canonical viewing volume?)
-- changing viewing bounds 
-- sharp points at the end of terrain    
-*/
