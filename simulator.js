@@ -67,8 +67,8 @@ var minAltitude = 2.8; // min altitude
 var maxAltitude = 3.5; // max altitude
 var S = 0.1; // max speed
 
+var color = vec4(1, 1, 1, 1); //colour of wireframe terrain (white)
 var scale = 0.1; //arbitary scaling factor for wireframe
-
 
 window.onload = function init() {
 
@@ -163,6 +163,14 @@ function getPatch(xmin, xmax, zmin, zmax) {
                 points.push(vec3(i, 0, j + scale));
                 points.push(vec3(i + scale, 0, j + scale));
                 points.push(vec3(i, 0, j + scale));
+
+                colours.push(color);
+                colours.push(color);
+                colours.push(color);
+
+                colours.push(color);
+                colours.push(color);
+                colours.push(color);
             }
             else if(flatShading || smoothShading || faceView){
                 points.push(vec3(i, 0, j));
@@ -217,14 +225,15 @@ function render() {
     flyingOffset += speed;
     noise.seed(10);
 
-    colours = [];
+    if(!wireframe && !pointsView)
+    {colours = [];}
     if (smoothShading || phongShading){
         normals = [];
     }
     for (var k = 0; k < points.length; k++) {
-        points[k][1] = noise.perlin2(points[k][0] - flyingOffset, points[k][2]);
+        points[k][1] = noise.perlin2(points[k][0] + flyingOffset, points[k][2]);
 
-		if (flatShading || smoothShading || faceView || wireframe || phongShading){
+		if (flatShading || smoothShading || faceView || phongShading){
             if (points[k][1] < -0.45){
                 colours.push(vec4(0,0,1.0,1.0));        //blue
             }
@@ -405,14 +414,14 @@ function toggleViews()
     {
         wireframe = false;
         normals = [];
-        pointsView = smoothShading = false;
+        pointsView = smoothShading = phongShading = false;
         flatShading = faceView = true;
     }
     else if(pointsView)
     {
         wireframe = true;
         pointsView = false;
-        flatShading = faceView = smoothShading = false;
+        flatShading = faceView = smoothShading = phongShading = false;
     }
     else if(faceView || smoothShading || flatShading || phongShading){
         flatShading = faceView = smoothShading = phongShading = false;
@@ -425,13 +434,13 @@ function toggleShading()
 {
     if(wireframe){
         flatShading = faceView = true;
-        smoothShading = wireframe = pointsView = false;
+        smoothShading = wireframe = pointsView = phongShading =  false;
         normals = [];
         getPatch(-10,10,-10,10);
     }
     else if(flatShading || faceView){
         smoothShading = true;
-        flatShading = wireframe = faceView = pointsView = false;
+        flatShading = wireframe = faceView = pointsView = phongShading = false;
         normals = [];
         colours = [];
         points = [];
@@ -440,14 +449,14 @@ function toggleShading()
     }
     else if(smoothShading){         
         phongShading = true;
-        smoothShading = flatShading = faceView = pointsView = false;
+        smoothShading = flatShading = faceView = pointsView = wireframe = false;
         normals = [];
-	changeShader = true;
+	    changeShader = true;
         getPatch(-10,10,-10,10);
     }
     else if (phongShading){ 
-	flatShading = faceView = true;
-	phongShading  = smoothShading = wireframe = pointsView = false;
+	    flatShading = faceView = true;
+	    phongShading  = smoothShading = wireframe = pointsView = false;
         normals = [];
         changeShader = false;
         getPatch(-10,10,-10,10);
