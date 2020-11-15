@@ -45,6 +45,9 @@ var upVector = vec3(0.0, 1.0, 0.0);
 //Shading
 var flatShading = false;
 var smoothShading = false;
+var phongShading = false;
+
+var changeShader = false; //check for switching between phong shading and the rest
 
 // Views
 var wireframe = true;
@@ -192,7 +195,7 @@ function helper(){
             normals.push(vec4(norm));
         }
     }
-    else if (smoothShading){             
+    else if (smoothShading || phongShading){             
         var val = vec4(0, 0, 0, 0);
         var val1, val2, val3, val4;
         
@@ -215,13 +218,13 @@ function render() {
     noise.seed(10);
 
     colours = [];
-    if (smoothShading){
+    if (smoothShading || phongShading){
         normals = [];
     }
     for (var k = 0; k < points.length; k++) {
         points[k][1] = noise.perlin2(points[k][0] - flyingOffset, points[k][2]);
 
-		if (flatShading || smoothShading || faceView || wireframe){
+		if (flatShading || smoothShading || faceView || wireframe || phongShading){
             if (points[k][1] < -0.45){
                 colours.push(vec4(0,0,1.0,1.0));        //blue
             }
@@ -267,7 +270,7 @@ function render() {
     {
         gl.drawArrays(gl.POINTS, 0, points.length);
     }
-    else if(flatShading || smoothShading || faceView)
+    else if(flatShading || smoothShading || faceView || phongShading)
     {
         gl.drawArrays(gl.TRIANGLES, 0, points.length)
     }
@@ -411,8 +414,8 @@ function toggleViews()
         pointsView = false;
         flatShading = faceView = smoothShading = false;
     }
-    else if(faceView || smoothShading || flatShading){
-        flatShading = faceView = smoothShading = false;
+    else if(faceView || smoothShading || flatShading || phongShading){
+        flatShading = faceView = smoothShading = phongShading = false;
         pointsView = true;
         wireframe = false;
     }
@@ -435,10 +438,18 @@ function toggleShading()
         getPatch(-10,10,-10,10);
         initBuffers();
     }
-    else if(smoothShading){         //toggle to phong shading here
-        wireframe = true;
+    else if(smoothShading){         
+        phongShading = true;
         smoothShading = flatShading = faceView = pointsView = false;
         normals = [];
+	changeShader = true;
+        getPatch(-10,10,-10,10);
+    }
+    else if (phongShading){ 
+	wireframe = true;
+	phongShading = smoothShading = flatShading = faceView = pointsView = false;
+        normals = [];
+        changeShader = false;
         getPatch(-10,10,-10,10);
     }
 }
