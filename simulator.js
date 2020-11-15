@@ -451,6 +451,7 @@ function toggleShading()
         normals = [];
         changeShader = false;
         getPatch(-10,10,-10,10);
+        initBuffers();
     }
 }
 
