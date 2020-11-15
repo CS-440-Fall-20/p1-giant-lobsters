@@ -8,7 +8,7 @@ var program;
 var points = [];
 var normals = [];
 var colours = []; 
-var faces = {}; // dictionary for storing normals for smooth shading
+var faces = {}; // dictionary for normal calculation of smooth shading
 
 // GLobal buffers
 var vertexBuffer;
