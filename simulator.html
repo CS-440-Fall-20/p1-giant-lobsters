@@ -20,6 +20,7 @@
     }
 </style>
 <script id="vertex-shader" type="x-shader/x-vertex">
+    precision mediump float;
     attribute vec3 vPosition; 
     attribute vec4 vColour; 
     attribute vec4 vNormal;
@@ -28,6 +29,7 @@
     uniform vec4 ambientProd, diffuseProd, specularProd;
     uniform vec4 lightPosition;
     uniform float shininess;
+    uniform bool changeShader;
 
     uniform mat4 modelViewMatrix;
     uniform mat4 projectionMatrix;
@@ -37,43 +39,99 @@
     {
         vec3 posit = (modelViewMatrix * vec4(vPosition,1)).xyz;
         vec3 dirLight;
+        if (!changeShader)
+        {
+            // check for directional light
+            if(lightPosition.w == 0.0) dirLight = normalize(lightPosition.xyz);
+            else dirLight = normalize( lightPosition.xyz - posit );
 
-        // check for directional light
-        if(lightPosition.w == 0.0) dirLight = normalize(lightPosition.xyz);
-        else dirLight = normalize( lightPosition.xyz - posit );
+            // vector from the vertex position to the eye
+            vec3 eye = -normalize( posit );
 
-        // vector from the vertex position to the eye
-        vec3 eye = -normalize( posit );
+            // halfway vector
+            vec3 mid = normalize( dirLight + eye );
 
-        // halfway vector
-        vec3 mid = normalize( dirLight + eye );
+            // Changing vertex normal into eye coordinates
+            vec3 n = normalize( normalMatrix*vNormal.xyz);
 
-        // Changing vertex normal into eye coordinates
-        vec3 n = normalize( normalMatrix*vNormal.xyz);
+            // Compute terms in the illumination equation
+            vec4 ambient = ambientProd;
+            float Kd = max( dot(dirLight, n), 0.0 );
+            vec4  diffuse = Kd*diffuseProd;
+            float Ks = pow( max(dot(n, mid), 0.0), shininess );
+            vec4  specular = Ks * specularProd;
 
-        // Compute terms in the illumination equation
-        vec4 ambient = ambientProd;
-        float Kd = max( dot(dirLight, n), 0.0 );
-        vec4  diffuse = Kd*diffuseProd;
-        float Ks = pow( max(dot(n, mid), 0.0), shininess );
-        vec4  specular = Ks * specularProd;
-        
-        if( dot(dirLight, n) < 0.0 ) {
-            specular = vec4(0.0, 0.0, 0.0, 1.0);
-        } 
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition,1);
-        gl_PointSize = 3.0;
-        fColour = (ambient + diffuse +specular) * vColour;
-        fColour.a = 1.0;
+            if( dot(dirLight, n) < 0.0 ) {
+                specular = vec4(0.0, 0.0, 0.0, 1.0);
+            } 
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition,1);
+            gl_PointSize = 3.0;
+            fColour = (ambient + diffuse +specular) * vColour;
+            fColour.a = 1.0;
+        }
+        else
+        {
+            vec3 L = normalize( lightPosition.xyz - posit );
+            vec3 E = -normalize( posit );
+            vec3 H = normalize( L + E );
+            vec3 N = normalize( (modelViewMatrix*vNormal).xyz);
+            gl_Position = projectionMatrix*modelViewMatrix * vec4(vPosition,1);
+            gl_Position.z = -gl_Position.z;
+        }
     }
 </script>
 
 <script id="fragment-shader" type="x-shader/x-fragment">
 precision mediump float;
-varying vec4 fColour;
+//varying vec4 vColour; 
+//varying  vec4 vNormal;
+varying  vec4 fColour;
+//varying vec3 vPosition;
+
+uniform bool changeShader;
+
+uniform  vec4 ambientProd, diffuseProd, specularProd;
+uniform  vec4 lightPosition;
+uniform  float shininess;
+
+uniform  mat4 modelViewMatrix;
+uniform  mat4 projectionMatrix;
+uniform  mat3 normalMatrix;
 void main()
 {
-    gl_FragColor = fColour;
+    //vec3 pos = (modelViewMatrix * vec4(vPosition,1)).xyz;
+    if (!changeShader)
+    {
+        gl_FragColor = fColour;
+    }
+    else
+    {
+    /*
+        vec4 newColor;
+        vec3 L;
+        if(lightPosition.w == 0.0) 
+        {
+            L = normalize(lightPosition.xyz);
+        }
+        else{
+            L = normalize( lightPosition.xyz - pos );
+            vec3 E = -normalize( pos );
+            vec3 H = normalize( L + E );
+            vec3 N = normalize( normalMatrix*vNormal.xyz);
+            vec4 ambient = ambientProd;
+            float Kd = max( dot(L, N), 0.0 );
+            vec4  diffuse = Kd*diffuseProd;
+            float Ks = pow( max(dot(N, H), 0.0), shininess );
+            vec4  specular = Ks * specularProd;
+        
+            if( dot(L, N) < 0.0 ) {
+                specular = vec4(0.0, 0.0, 0.0, 1.0);
+            } 
+            newColor = (ambient + diffuse +specular) * vColour;
+            newColor.a = 1.0;
+            gl_FragColor = newColor;
+        }*/
+    }
 }
 </script>
 
