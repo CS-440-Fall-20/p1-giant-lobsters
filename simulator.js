@@ -446,8 +446,8 @@ function toggleShading()
         getPatch(-10,10,-10,10);
     }
     else if (phongShading){ 
-	wireframe = true;
-	phongShading = smoothShading = flatShading = faceView = pointsView = false;
+	flatShading = faceView = true;
+	phongShading  = smoothShading = wireframe = pointsView = false;
         normals = [];
         changeShader = false;
         getPatch(-10,10,-10,10);
