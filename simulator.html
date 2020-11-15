@@ -10,14 +10,12 @@
         border: 1px solid blue;
     }
 
-    .controls {
-        float: left;
-        background-color: rgb(140, 243, 229);
-        margin: 50px auto;
-        margin-left: 500px;
-        width: 300px;
-        border: rgb(0, 0, 0) 3px dotted;
-        font-family: monospace;
+    .w3-button {
+        float: right;
+        border-radius: 20px;
+    }
+
+    .align-canvas {
         text-align: center;
     }
 </style>
@@ -63,34 +61,45 @@ void main()
 <body>
     </br>
     <div class="w3-container">
-        <button onclick="document.getElementById('id01').style.display='block'" class="w3-button w3-black">Open Key Map</button>
+        <button onclick="document.getElementById('id01').style.display='block'" class="w3-button w3-black">?</button>
         <div id="id01" class="w3-modal">
             <div class="w3-modal-content">
                 <div class="w3-container">
                     <span onclick="document.getElementById('id01').style.display='none'"
                         class="w3-button w3-display-topright">&times;</span>
-                    <p style="margin-left: 20px; text-align: left;">
-                        - Up and Down arrows to vary <b>speed.</b> </br>
-                        – W, S (and lower case) for <b>pitch.</b> </br>
-                        – A, D (and lower case) for <b>yaw.</b></br>
-                        – Q, E (and lower case) for <b>roll.</b> </br>
-                        - Press 'V' to toggle <b>views.</b> </br>
-                        - Press 'C' to toggle <b>shading.</b> </br>
-                        – Press 1 and Shift+1 to vary <b>left</b> </br>
-                        – Press 2 and Shift+2 to vary <b>right</b> </br>
-                        – Press 3 and Shift+3 to vary <b>top</b> </br>
-                        – Press 4 and Shift+4 to vary <b>bottom</b> </br>
-                        – Press 5 and Shift+5 to vary <b>near</b></br>
-                        – Press 6 and Shift+6 to vary <b>far</b>
+                    <p style="margin-left: 20px; text-align: center;">
+                        <b>Flight Controls:</b> </br>
+                        – Press <b>Up</b> and <b>Down</b> arrows to vary <b>speed.</b> </br>
+                        – Press <b>W, S</b> to vary <b>pitch.</b> </br>
+                        – Press <b>A, D</b> to vary <b>yaw.</b></br>
+                        – PRess <b>Q, E</b> to vary <b>roll.</b> </br> </br>
+                        <b>View Controls:</b> </br>
+                        – Press <b>1</b> and Shift+1</b> to vary <b>left.</b> </br>
+                        – Press <b>2</b> and Shift+2</b> to vary <b>right.</b> </br>
+                        – Press <b>3</b> and Shift+3</b> to vary <b>top.</b> </br>
+                        – Press <b>4</b> and Shift+4</b> to vary <b>bottom.</b> </br>
+                        – Press <b>5</b> and Shift+5</b> to vary <b>near.</b></br>
+                        – Press <b>6</b> and Shift+6</b> to vary <b>far.</b> </br> </br>
+                        – Press <b>'V'</b> to toggle <b>views.</b> </br>
+                        (wireframe -> faces -> points -> wireframe) </br></br>
+
+                        – In "faces" view you can: </br>
+                        Press <b>'C'</b> to toggle <b>shading.</b> </br>
+                        (flat -> smooth -> Phong -> flat) </br> </br>
+
+                        – Press <b>'Esc'</b> to <b>quit</b> the simulator. </br>
+
                     </p>
                 </div>
             </div>
         </div>
     </div>
     </br>
-    <canvas id="gl-canvas" width="1024" height="512">
-        Oops ... your browser doesn't support the HTML5 canvas element
-    </canvas>
+    <div class="align-canvas">
+        <canvas id="gl-canvas" width="1024" height="512">
+            Oops ... your browser doesn't support the HTML5 canvas element
+        </canvas>
+    </div>
 
 </body>
 
