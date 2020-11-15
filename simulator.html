@@ -34,13 +34,17 @@
     uniform mat4 modelViewMatrix;
     uniform mat4 projectionMatrix;
     uniform mat3 normalMatrix;
+    varying vec3 posit;
+    varying vec3 N;
+    varying vec4 vcolour;
 
     void main() 
     {
-        vec3 posit = (modelViewMatrix * vec4(vPosition,1)).xyz;
+        posit = (modelViewMatrix * vec4(vPosition,1)).xyz;
         vec3 dirLight;
         if (!changeShader)
         {
+            vcolour = vColour;
             // check for directional light
             if(lightPosition.w == 0.0) dirLight = normalize(lightPosition.xyz);
             else dirLight = normalize( lightPosition.xyz - posit );
@@ -52,16 +56,16 @@
             vec3 mid = normalize( dirLight + eye );
 
             // Changing vertex normal into eye coordinates
-            vec3 n = normalize( normalMatrix*vNormal.xyz);
+            N = normalize( normalMatrix*vNormal.xyz);
 
             // Compute terms in the illumination equation
             vec4 ambient = ambientProd;
-            float Kd = max( dot(dirLight, n), 0.0 );
+            float Kd = max( dot(dirLight, N), 0.0 );
             vec4  diffuse = Kd*diffuseProd;
-            float Ks = pow( max(dot(n, mid), 0.0), shininess );
+            float Ks = pow( max(dot(N, mid), 0.0), shininess );
             vec4  specular = Ks * specularProd;
 
-            if( dot(dirLight, n) < 0.0 ) {
+            if( dot(dirLight, N) < 0.0 ) {
                 specular = vec4(0.0, 0.0, 0.0, 1.0);
             } 
             gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition,1);
@@ -71,10 +75,11 @@
         }
         else
         {
+            vcolour = vColour;
             vec3 L = normalize( lightPosition.xyz - posit );
             vec3 E = -normalize( posit );
             vec3 H = normalize( L + E );
-            vec3 N = normalize( (modelViewMatrix*vNormal).xyz);
+            N = normalize( (modelViewMatrix*vNormal).xyz);
             gl_Position = projectionMatrix*modelViewMatrix * vec4(vPosition,1);
             gl_Position.z = -gl_Position.z;
         }
@@ -83,11 +88,9 @@
 
 <script id="fragment-shader" type="x-shader/x-fragment">
 precision mediump float;
-//varying vec4 vColour; 
-//varying  vec4 vNormal;
 varying  vec4 fColour;
-//varying vec3 vPosition;
-
+varying vec3 posit;
+varying vec3 N;
 uniform bool changeShader;
 
 uniform  vec4 ambientProd, diffuseProd, specularProd;
@@ -97,27 +100,27 @@ uniform  float shininess;
 uniform  mat4 modelViewMatrix;
 uniform  mat4 projectionMatrix;
 uniform  mat3 normalMatrix;
+varying vec4 vcolour;
 void main()
 {
-    //vec3 pos = (modelViewMatrix * vec4(vPosition,1)).xyz;
     if (!changeShader)
     {
         gl_FragColor = fColour;
     }
     else
     {
-    /*
+    
         vec4 newColor;
         vec3 L;
         if(lightPosition.w == 0.0) 
         {
             L = normalize(lightPosition.xyz);
         }
+       
         else{
-            L = normalize( lightPosition.xyz - pos );
-            vec3 E = -normalize( pos );
+            L = normalize( lightPosition.xyz - posit );
+            vec3 E = -normalize( posit );
             vec3 H = normalize( L + E );
-            vec3 N = normalize( normalMatrix*vNormal.xyz);
             vec4 ambient = ambientProd;
             float Kd = max( dot(L, N), 0.0 );
             vec4  diffuse = Kd*diffuseProd;
@@ -127,10 +130,10 @@ void main()
             if( dot(L, N) < 0.0 ) {
                 specular = vec4(0.0, 0.0, 0.0, 1.0);
             } 
-            newColor = (ambient + diffuse +specular) * vColour;
+            newColor = (ambient + diffuse +specular) * vcolour;
             newColor.a = 1.0;
             gl_FragColor = newColor;
-        }*/
+        }
     }
 }
 </script>
